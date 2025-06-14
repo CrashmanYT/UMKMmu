@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
+use App\ProductStatus;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,7 +18,12 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->can('manage orders');
+    }
 
     public static function form(Form $form): Form
     {
@@ -26,9 +32,10 @@ class OrderResource extends Resource
                 Forms\Components\TextInput::make('user_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('status')
+                Forms\Components\Select::make('status')
                     ->required()
-                    ->maxLength(255),
+                    ->native(false)
+                    ->options(ProductStatus::class),
                 Forms\Components\TextInput::make('total_price')
                     ->required()
                     ->numeric(),
@@ -43,6 +50,7 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_price')
                     ->numeric()
@@ -69,6 +77,7 @@ class OrderResource extends Resource
                 ]),
             ]);
     }
+    
 
     public static function getRelations(): array
     {

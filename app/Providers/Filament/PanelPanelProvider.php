@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Register;
+use App\Filament\Pages\BuyerDashboard;
+use App\Filament\Pages\SellerDashboard;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,6 +20,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class PanelPanelProvider extends PanelProvider
@@ -27,6 +32,11 @@ class PanelPanelProvider extends PanelProvider
             ->id('panel')
             ->path('panel')
             ->login()
+            ->registration(Register::class)
+            ->homeUrl(fn () => Auth::user()?->can('access seller dashboard')
+                ? route('filament.panel.pages.seller-dashboard')
+                : route('filament.panel.pages.buyer-dashboard')
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -34,11 +44,12 @@ class PanelPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                SellerDashboard::class,
+                BuyerDashboard::class
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -55,4 +66,5 @@ class PanelPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+
 }
