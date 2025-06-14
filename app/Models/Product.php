@@ -26,8 +26,12 @@ class Product extends Model
     }
 
     public function seller()
-    {  
-        return $this->belongsTo(SellerProfiles::class);
+    {
+        // The `seller_id` column on the products table references the users
+        // table. A seller profile record is linked to a user via `user_id`,
+        // so we need to specify that owner key explicitly when defining the
+        // relationship.
+        return $this->belongsTo(SellerProfiles::class, 'seller_id', 'user_id');
     }
 
     public function reviews()
